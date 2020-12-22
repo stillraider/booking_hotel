@@ -25,7 +25,6 @@ function RangeSlider() {
         that.maxPrice = 0;
         that.minPrice = Number.MAX_SAFE_INTEGER;
 
-
         for (let i = 0; i < allPrice.length; i++) {
             let price = allPrice[i].innerText.replace(/\s/g,'');
 
@@ -78,19 +77,20 @@ function RangeSlider() {
 let panelGeolocation = new PanelGeolocation();
 let inputGeolocation = new InputGeolocation();
 
-
 function PanelGeolocation() {
-    this.input = document.querySelector('.filter__option_input');
-    this.footerOption = document.querySelector('.filter__option_footer-inner');
-    this.locationPanel = document.querySelector('.filter__option_location');
+    this.input = document.querySelector('#input-search');
+    let locationPanel = document.querySelector('.filter__option_location');
+    let visiblePanel = this.input.closest('.filter__option');
+    
     let that = this;
 
-    this.input.addEventListener('click',function() {
+    this.input.addEventListener('click', function() {
         that.showPanel();
     });
 
     this.showPanel = function () {
-        visibleLocation('Visible', 'block');
+        visibleLocation('block');
+        visiblePanel.style.overflow = 'Visible';
 
         document.body.addEventListener('click', eventHideLocation);
     }
@@ -102,28 +102,25 @@ function PanelGeolocation() {
     }
 
     this.hidePanel = function () {
-        visibleLocation('hidden', 'none');
+        visibleLocation('none');
 
         document.body.removeEventListener('click', eventHideLocation);
     }
 
-    function visibleLocation(overflow,  display) {
-        that.input.closest('.filter__option').style.overflow = overflow;
-        that.locationPanel.style.display = display;
+    function visibleLocation(display) {
+        locationPanel.style.display = display;
     }
 }
 
 function InputGeolocation() {
-    let input = document.querySelector('#input-search');
-
     InitSearchInputLocation();
 
     function InitSearchInputLocation() {
-        input.addEventListener('input', function () {
+        panelGeolocation.input.addEventListener('input', function () {
             let val = this.value.trim().toLowerCase();
             let filterOptionIitem = document.querySelectorAll('.filter__option_location-item');
 
-            if (val != '') {
+            if (val.length != 0) {
                 let isShow = false;
 
                 for (let i = 0; i < filterOptionIitem.length; i++) {
@@ -132,7 +129,6 @@ function InputGeolocation() {
 
                     if (search == -1) {
                         item.classList.add('hide');
-                        item.innerHTML = item.innerText;
                     }
                     else {
                         isShow = true;
@@ -162,7 +158,7 @@ function InputGeolocation() {
     }
 
     this.Discharge = function() {
-        input.value = '';
+        panelGeolocation.input.value = '';
     }
 }
 
@@ -176,7 +172,8 @@ function Filter() {
     let products = document.querySelectorAll('.product');
     let moreItemsButton = document.querySelector('#moreItems');
     let messageNotFound = document.querySelector('#messageNotFound');
-    let arrayProducts = Array.prototype.slice.call(products);
+    let priceData = document.querySelector('.option-price').getAttribute('data-filter-group');
+    let arrayProducts;
     let data = {};
 
     InitMoreButon();
@@ -197,9 +194,9 @@ function Filter() {
 
     this.update = function() {
         arrayProducts = Array.prototype.slice.call(products);
+        let keysFilters = Object.keys(data);
 
         for (let i = 0; i < arrayProducts.length; i++) {
-            let keysFilters = Object.keys(data);
             let itemElem = arrayProducts[i];
             let isMatched = true;
 
@@ -208,7 +205,7 @@ function Filter() {
                 let prop = keysFilters[j];
                 let filterData = data[prop];
 
-                if(prop == 'price') {
+                if(prop == priceData) {
                     let price = parseInt(itemElem.querySelector('.price').innerText.replace(/\s/g,''));
                     isMatched = filterData[0] <= price && filterData[1] >= price;
                 }
